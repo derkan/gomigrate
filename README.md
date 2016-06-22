@@ -1,5 +1,8 @@
 # gomigrate
 
+[![Build Status](https://travis-ci.org/hobeone/gomigrate.svg?branch=master)](https://travis-ci.org/hobeone/gomigrate)
+
+
 A SQL database migration toolkit in Golang that supports migrations from multiple sources including in memory and files on disk.
 
 ## Supported databases
