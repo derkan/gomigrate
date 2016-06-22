@@ -195,6 +195,8 @@ func (m *Migrator) ApplyMigration(migration *Migration, mType migrationType) err
 		sql = migration.Up
 	} else if mType == downMigration && migration.Down != "" {
 		sql = migration.Down
+	} else {
+		return InvalidMigrationType
 	}
 	transaction, err := m.DB.Begin()
 	if err != nil {

@@ -95,6 +95,16 @@ func TestNewMigrator(t *testing.T) {
 	cleanup()
 }
 
+func TestApplyMigrations(t *testing.T) {
+	m := &Migrator{
+		Logger: nullLogger,
+	}
+	err := m.ApplyMigration(&Migration{}, migrationType("foo"))
+	if err == nil {
+		t.Fatalf("Expected error on invalid migration type")
+	}
+}
+
 func TestCreatingMigratorWhenTableExists(t *testing.T) {
 	// Create the table and populate it with a row.
 	_, err := db.Exec(adapter.CreateMigrationTableSql())
