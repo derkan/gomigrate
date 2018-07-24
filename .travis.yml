@@ -14,6 +14,7 @@ before_script:
   - go get github.com/lib/pq
   - go get github.com/go-sql-driver/mysql
   - go get github.com/mattn/go-sqlite3
+  - go get github.com/denisenkom/go-mssqldb
 script:
   - DB=pg go test
   - DB=mysql go test
