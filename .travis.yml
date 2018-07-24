@@ -1,11 +1,11 @@
 language: go
 go:
-  - "1.6"
   - "1.8"
   - "1.10.x"
   - master
 services:
   - postgresql
+  - mysql
 before_script:
   - psql -c 'create database gomigrate;' -U postgres
   - mysql -uroot -e "CREATE USER 'gomigrate'@'localhost' IDENTIFIED BY 'password';"
