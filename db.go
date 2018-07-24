@@ -1,6 +1,9 @@
 package gomigrate
 
-import "strings"
+import (
+	"strconv"
+	"strings"
+)
 
 type Migratable interface {
 	SelectMigrationTableSql() string
@@ -78,9 +81,28 @@ func (m Mysql) MigrationLogDeleteSql() string {
 }
 
 func (m Mysql) GetMigrationCommands(sql string) []string {
-	count := strings.Count(sql, ";")
-	commands := strings.SplitN(string(sql), ";", count)
-	return commands
+	delimiter := ";"
+	// we look at the first line of the migration for `delimiter foo`.
+	// If found, we strip the line off, unquote the value, and use it as the delimiter
+	if strings.HasPrefix(sql, "delimiter ") {
+		delimiterOffset := len("delimiter ")
+		contentSplit := strings.SplitN(sql[delimiterOffset:], "\n", 2)
+
+		delimiter = strings.TrimSpace(contentSplit[0])
+
+		if len(contentSplit) > 1 {
+			sql = contentSplit[1]
+		} else {
+			sql = ""
+		}
+
+		delimiterUnquoted, err := strconv.Unquote(delimiter)
+		if err == nil {
+			delimiter = delimiterUnquoted
+		}
+	}
+
+	return strings.Split(sql, delimiter)
 }
 
 // MARIADB
