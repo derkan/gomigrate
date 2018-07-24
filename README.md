@@ -1,8 +1,9 @@
 # gomigrate
 
-[![Build Status](https://travis-ci.org/DavidHuie/gomigrate.svg?branch=master)](https://travis-ci.org/DavidHuie/gomigrate)
+[![Build Status](https://travis-ci.org/hobeone/gomigrate.svg?branch=master)](https://travis-ci.org/hobeone/gomigrate)
 
-A SQL database migration toolkit in Golang.
+
+A SQL database migration toolkit in Golang that supports migrations from multiple sources including in memory and files on disk.
 
 ## Supported databases
 
@@ -18,20 +19,29 @@ A SQL database migration toolkit in Golang.
 First import the package:
 
 ```go
-import "github.com/DavidHuie/gomigrate"
+import "github.com/hobeone/gomigrate"
+```
+
+Load Migrations from disk:
+```go
+m, err = gomigrate.MigrationsFromPath(path, logger)
+if err != nil {
+  // deal with error
+}
 ```
 
 Given a `database/sql` database connection to a PostgreSQL database, `db`,
 and a directory to migration files, create a migrator:
 
 ```go
-migrator, _ := gomigrate.NewMigrator(db, gomigrate.Postgres{}, "./migrations")
+migrator, _ := gomigrate.NewMigratorWithMigrations(db, gomigrate.Postgres{}, m)
+migrator.Logger = logger
 ```
 
-You may also specify a specific logger to use, such as logrus:
+You may also specify a specific logger to use at creation time, such as logrus:
 
 ```go
-migrator, _ := gomigrate.NewMigratorWithLogger(db, gomigrate.Postgres{}, "./migrations", logrus.New())
+migrator, _ := gomigrate.NewMigratorWithLogger(db, gomigrate.Postgres{}, m, logrus.New())
 ```
 
 To migrate the database, run:
@@ -83,6 +93,32 @@ CREATE TABLE users();
 #### 1_add_users_table_down.sql
 ```
 DROP TABLE users;
+```
+
+## Migrations from Memory
+Migrations can also be embedded directly in your go code and passed into the Migrator.  This can be useful for testdata fixtures or using go-bindata to build fixture data into your go binary.
+
+```go
+	migrations := []*Migration{
+		{
+			ID:   100,
+			Name: "FirstMigration",
+			Up: `CREATE TABLE first_table (
+				id INTEGER PRIMARY KEY
+			)`,
+			Down: `drop table "first_table"`,
+		},
+		{
+			ID:   110,
+			Name: "SecondMigration",
+			Up: `CREATE TABLE second_table (
+				id INTEGER PRIMARY KEY
+			)`,
+			Down: `drop table "second_table"`,
+		},
+	}
+	migrator, _ := gomigrate.NewMigratorWithMigrations(db, gomigrate.Postgres{}, migrations)
+	migrator.Migrate()
 ```
 
 ## Copyright

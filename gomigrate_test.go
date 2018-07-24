@@ -3,6 +3,7 @@ package gomigrate
 import (
 	"database/sql"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"testing"
@@ -14,18 +15,57 @@ import (
 )
 
 var (
-	db      *sql.DB
-	adapter Migratable
-	dbType  string
+	db         *sql.DB
+	adapter    Migratable
+	dbType     string
+	nullLogger = log.New(ioutil.Discard, "", log.LstdFlags)
 )
 
 func GetMigrator(test string) *Migrator {
 	path := fmt.Sprintf("test_migrations/%s_%s", test, dbType)
-	m, err := NewMigrator(db, adapter, path)
+	m, err := NewMigratorWithLogger(db, adapter, path, nullLogger)
 	if err != nil {
 		panic(err)
 	}
 	return m
+}
+
+func TestNewMigratorFromMemory(t *testing.T) {
+	migrations := []*Migration{
+		{
+			ID:   100,
+			Name: "FirstMigration",
+			Up: `CREATE TABLE MemoryTest (
+				id INTEGER PRIMARY KEY
+			)`,
+			Down: `drop table "MemoryTest"`,
+		},
+		{
+			ID:   110,
+			Name: "SecondMigration",
+			Up: `CREATE TABLE MemoryTest2 (
+				id INTEGER PRIMARY KEY
+			)`,
+			Down: `drop table "MemoryTest2"`,
+		},
+	}
+	m, err := NewMigratorWithMigrations(db, adapter, migrations)
+	if err != nil {
+		t.Fatalf("Error makiing new migrator: %v", err)
+	}
+	m.Logger = nullLogger
+	m.Migrate()
+}
+
+func TestGetMigrationsFromPath(t *testing.T) {
+	path := fmt.Sprintf("test_migrations/%s_%s/", "test1", "pg")
+	m, err := MigrationsFromPath(path, nullLogger)
+	if err != nil {
+		t.Fatalf("Error getting migrations: %v", err)
+	}
+	if len(m) < 4 {
+		t.Fatalf("Expected 4 migrations, got %d", len(m))
+	}
 }
 
 func TestNewMigrator(t *testing.T) {
@@ -49,14 +89,24 @@ func TestNewMigrator(t *testing.T) {
 	if migration.Name != "test" {
 		t.Errorf("Invalid migration name detected: %s", migration.Name)
 	}
-	if migration.Id != 1 {
-		t.Errorf("Invalid migration num detected: %d", migration.Id)
+	if migration.ID != 1 {
+		t.Errorf("Invalid migration num detected: %d", migration.ID)
 	}
 	if migration.Status != Inactive {
 		t.Errorf("Invalid migration num detected: %d", migration.Status)
 	}
 
 	cleanup()
+}
+
+func TestApplyMigrations(t *testing.T) {
+	m := &Migrator{
+		Logger: nullLogger,
+	}
+	err := m.ApplyMigration(&Migration{}, migrationType("foo"))
+	if err == nil {
+		t.Fatalf("Expected error on invalid migration type")
+	}
 }
 
 func TestCreatingMigratorWhenTableExists(t *testing.T) {
