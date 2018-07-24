@@ -17,5 +17,4 @@ before_script:
   - go get github.com/denisenkom/go-mssqldb
 script:
   - DB=pg go test
-  - DB=mysql go test
   - DB=sqlite3 go test
