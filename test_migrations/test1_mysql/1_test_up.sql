@@ -2,13 +2,3 @@ CREATE TABLE test (
      id INT NOT NULL AUTO_INCREMENT,
      PRIMARY KEY (id)
 );
-
-CREATE TABLE test2 (
-     id INT NOT NULL AUTO_INCREMENT,
-     PRIMARY KEY (id)
-);
-
-CREATE TABLE tt (c text NOT NULL);
-
-INSERT INTO tt VALUES('a');
-INSERT INTO tt VALUES('x');
