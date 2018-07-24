@@ -62,6 +62,13 @@ the migration should run relative to the other migrations.
 
 `id` should not be `0` as that value is used for internal validations.
 
+### Custom delimiter
+
+By default SQL clauses are delimited with ";", you can set a new delimiter
+by adding following as first line to migration sql file(for example set 
+delimiter to `#`):
+``delimiter #`
+
 ### Example
 
 If I'm trying to add a "users" table to the database, I would create
