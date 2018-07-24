@@ -11,14 +11,14 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
-  _ "github.com/denisenkom/go-mssqldb"
+	_ "github.com/denisenkom/go-mssqldb"
 )
 
 var (
 	db         *sql.DB
 	adapter    Migratable
 	dbType     string
-	nullLogger = log.New(ioutil.Discard, "", log.LstdFlags)
+	nullLogger = log.New(os.Stdout, "", log.LstdFlags)
 )
 
 func GetMigrator(test string) *Migrator {
