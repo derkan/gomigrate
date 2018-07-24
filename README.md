@@ -1,6 +1,6 @@
 # gomigrate
 
-[![Build Status](https://travis-ci.org/hobeone/gomigrate.svg?branch=master)](https://travis-ci.org/hobeone/gomigrate)
+[![Build Status](https://travis-ci.org/derkan/gomigrate.svg?branch=master)](https://travis-ci.org/derkan/gomigrate)
 
 
 A SQL database migration toolkit in Golang that supports migrations from multiple sources including in memory and files on disk.
@@ -19,7 +19,7 @@ A SQL database migration toolkit in Golang that supports migrations from multipl
 First import the package:
 
 ```go
-import "github.com/hobeone/gomigrate"
+import "github.com/derkan/gomigrate"
 ```
 
 Load Migrations from disk:
@@ -77,7 +77,7 @@ the migration should run relative to the other migrations.
 By default SQL clauses are delimited with ";", you can set a new delimiter
 by adding following as first line to migration sql file(for example set 
 delimiter to `#`):
-``delimiter #`
+`delimiter #`
 
 ### Example
 
