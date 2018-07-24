@@ -38,7 +38,16 @@ migrator, _ := gomigrate.NewMigratorWithMigrations(db, gomigrate.Postgres{}, m)
 migrator.Logger = logger
 ```
 
-You may also specify a specific logger to use at creation time, such as logrus:
+You may also specify a specific logger to use at creation time supporting interface:
+```go
+type Logger interface {
+	Print(v ...interface{})
+	Printf(format string, v ...interface{})
+	Println(v ...interface{})
+	Fatalf(format string, v ...interface{})
+}
+```
+;such as logrus:
 
 ```go
 migrator, _ := gomigrate.NewMigratorWithLogger(db, gomigrate.Postgres{}, m, logrus.New())
