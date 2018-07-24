@@ -42,6 +42,13 @@ func (p Postgres) GetMigrationCommands(sql string) []string {
 	return []string{sql}
 }
 
+// CockroachDB
+
+type CockroachDB struct {
+	Postgres
+}
+
+
 // MYSQL
 
 type Mysql struct{}

@@ -6,7 +6,8 @@ A SQL database migration toolkit in Golang.
 
 ## Supported databases
 
-- PostgreSQL (...and CockroachDB)
+- PostgreSQL  
+- CockroachDB
 - MariaDB
 - MySQL
 - Sqlite3
