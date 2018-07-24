@@ -18,7 +18,7 @@ var (
 	db         *sql.DB
 	adapter    Migratable
 	dbType     string
-	nullLogger = log.New(os.Stdout, "", log.LstdFlags)
+	nullLogger = log.New(ioutil.Discard, "", log.LstdFlags)
 )
 
 func GetMigrator(test string) *Migrator {
