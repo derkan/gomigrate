@@ -184,6 +184,7 @@ func (m *Migrator) Migrations(status int) []*Migration {
 			migrations = append(migrations, migration)
 		}
 	}
+
 	return migrations
 }
 
@@ -274,6 +275,11 @@ func (m *Migrator) Rollback() error {
 
 // RollbackN rolls back N migrations.
 func (m *Migrator) RollbackN(n int) error {
+	// checks the database for migration statuses
+	if err := m.getMigrationStatuses(); err != nil {
+		return err
+	}
+
 	migrations := m.Migrations(Active)
 	if len(migrations) == 0 {
 		return nil
