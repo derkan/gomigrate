@@ -7,12 +7,12 @@ import (
 	"log"
 	"os"
 	"testing"
-
-	_ "github.com/denisenkom/go-mssqldb"
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/lib/pq"
-	_ "github.com/mattn/go-sqlite3"
-)
+	/*
+		_ "github.com/denisenkom/go-mssqldb"
+		_ "github.com/go-sql-driver/mysql"
+		_ "github.com/lib/pq"
+		_ "github.com/mattn/go-sqlite3"
+	*/)
 
 var (
 	db         *sql.DB
@@ -111,11 +111,11 @@ func TestApplyMigrations(t *testing.T) {
 
 func TestCreatingMigratorWhenTableExists(t *testing.T) {
 	// Create the table and populate it with a row.
-	_, err := db.Exec(adapter.CreateMigrationTableSql())
+	_, err := db.Exec(adapter.CreateMigrationTableSQL())
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = db.Exec(adapter.MigrationLogInsertSql(), 123)
+	_, err = db.Exec(adapter.MigrationLogInsertSQL(), 123)
 	if err != nil {
 		t.Error(err)
 	}
@@ -144,7 +144,7 @@ func TestMigrationAndRollback(t *testing.T) {
 
 	// Ensure that the migration ran.
 	row := db.QueryRow(
-		adapter.SelectMigrationTableSql(),
+		adapter.SelectMigrationTableSQL(),
 		"test",
 	)
 	var tableName string
@@ -156,7 +156,7 @@ func TestMigrationAndRollback(t *testing.T) {
 	}
 	// Ensure that the migrate status is correct.
 	row = db.QueryRow(
-		adapter.GetMigrationSql(),
+		adapter.GetMigrationSQL(),
 		1,
 	)
 	var status int
@@ -172,7 +172,7 @@ func TestMigrationAndRollback(t *testing.T) {
 
 	// Ensure that the down migration ran.
 	row = db.QueryRow(
-		adapter.SelectMigrationTableSql(),
+		adapter.SelectMigrationTableSQL(),
 		"test",
 	)
 	err := row.Scan(&tableName)
@@ -182,7 +182,7 @@ func TestMigrationAndRollback(t *testing.T) {
 
 	// Ensure that the migration log is missing.
 	row = db.QueryRow(
-		adapter.GetMigrationSql(),
+		adapter.GetMigrationSQL(),
 		1,
 	)
 	if err := row.Scan(&status); err != nil && err != sql.ErrNoRows {
@@ -219,12 +219,12 @@ func init() {
 	case "mssql":
 		dbType = "mssql"
 		log.Print("Using mssql")
-		adapter = Mssql{}
+		adapter = MsSQL{}
 		db, err = sql.Open("mssql", "Server=.;User Id=root;Password=root;Database=gomigrate;Encrypt=disable;")
 	default:
 		dbType = "sqlite3"
 		log.Print("Using sqlite3")
-		adapter = Sqlite3{}
+		adapter = SQLite3{}
 		db, err = sql.Open("sqlite3", "file::memory:?cache=shared")
 	}
 

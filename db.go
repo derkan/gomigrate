@@ -5,62 +5,67 @@ import (
 	"strings"
 )
 
+// Migratable is migration interface
 type Migratable interface {
-	SelectMigrationTableSql() string
-	CreateMigrationTableSql() string
-	GetMigrationSql() string
-	MigrationLogInsertSql() string
-	MigrationLogDeleteSql() string
+	SelectMigrationTableSQL() string
+	CreateMigrationTableSQL() string
+	GetMigrationSQL() string
+	MigrationLogInsertSQL() string
+	MigrationLogDeleteSQL() string
 	GetMigrationCommands(string) []string
 }
 
-// POSTGRES
-
+// Postgres migrator
 type Postgres struct{}
 
-func (p Postgres) SelectMigrationTableSql() string {
+// SelectMigrationTableSQL gets table names from db catalog
+func (p Postgres) SelectMigrationTableSQL() string {
 	return "SELECT tablename FROM pg_catalog.pg_tables WHERE tablename = $1"
 }
 
-func (p Postgres) CreateMigrationTableSql() string {
+// CreateMigrationTableSQL gets SQL to create table for holding migrations
+func (p Postgres) CreateMigrationTableSQL() string {
 	return `CREATE TABLE gomigrate (
                   id           SERIAL       PRIMARY KEY,
                   migration_id BIGINT       UNIQUE NOT NULL
                 )`
 }
 
-func (p Postgres) GetMigrationSql() string {
+// GetMigrationSQL gets migration SQL for given id
+func (p Postgres) GetMigrationSQL() string {
 	return `SELECT migration_id FROM gomigrate WHERE migration_id = $1`
 }
 
-func (p Postgres) MigrationLogInsertSql() string {
+// MigrationLogInsertSQL gets insert SQL for migration
+func (p Postgres) MigrationLogInsertSQL() string {
 	return "INSERT INTO gomigrate (migration_id) values ($1)"
 }
 
-func (p Postgres) MigrationLogDeleteSql() string {
+// MigrationLogDeleteSQL returns SQL for deleting a migration"
+func (p Postgres) MigrationLogDeleteSQL() string {
 	return "DELETE FROM gomigrate WHERE migration_id = $1"
 }
 
-func (p Postgres) GetMigrationCommands(sql string) []string {
-	return []string{sql}
+// GetMigrationCommands return SQL commands
+func (p Postgres) GetMigrationCommands(SQL string) []string {
+	return []string{SQL}
 }
 
-// CockroachDB
-
+// CockroachDB migrator
 type CockroachDB struct {
 	Postgres
 }
 
+// MySQL adapter
+type MySQL struct{}
 
-// MYSQL
-
-type Mysql struct{}
-
-func (m Mysql) SelectMigrationTableSql() string {
+// SelectMigrationTableSQL gets table names from db catalog
+func (m MySQL) SelectMigrationTableSQL() string {
 	return "SELECT table_name FROM information_schema.tables WHERE table_name = ? AND table_schema = (SELECT DATABASE())"
 }
 
-func (m Mysql) CreateMigrationTableSql() string {
+// CreateMigrationTableSQL gets insert SQL for migration
+func (m MySQL) CreateMigrationTableSQL() string {
 	return `CREATE TABLE gomigrate (
                   id           INT          NOT NULL AUTO_INCREMENT,
                   migration_id BIGINT       NOT NULL UNIQUE,
@@ -68,32 +73,36 @@ func (m Mysql) CreateMigrationTableSql() string {
                 )`
 }
 
-func (m Mysql) GetMigrationSql() string {
+// GetMigrationSQL gets migration SQL for given id
+func (m MySQL) GetMigrationSQL() string {
 	return `SELECT migration_id FROM gomigrate WHERE migration_id = ?`
 }
 
-func (m Mysql) MigrationLogInsertSql() string {
+// MigrationLogInsertSQL gets insert SQL for migration
+func (m MySQL) MigrationLogInsertSQL() string {
 	return "INSERT INTO gomigrate (migration_id) values (?)"
 }
 
-func (m Mysql) MigrationLogDeleteSql() string {
+// MigrationLogDeleteSQL returns SQL for deleting a migration"
+func (m MySQL) MigrationLogDeleteSQL() string {
 	return "DELETE FROM gomigrate WHERE migration_id = ?"
 }
 
-func (m Mysql) GetMigrationCommands(sql string) []string {
+// GetMigrationCommands return SQL commands
+func (m MySQL) GetMigrationCommands(SQL string) []string {
 	delimiter := ";"
 	// we look at the first line of the migration for `delimiter foo`.
 	// If found, we strip the line off, unquote the value, and use it as the delimiter
-	if strings.HasPrefix(sql, "delimiter ") {
+	if strings.HasPrefix(SQL, "delimiter ") {
 		delimiterOffset := len("delimiter ")
-		contentSplit := strings.SplitN(sql[delimiterOffset:], "\n", 2)
+		contentSplit := strings.SplitN(SQL[delimiterOffset:], "\n", 2)
 
 		delimiter = strings.TrimSpace(contentSplit[0])
 
 		if len(contentSplit) > 1 {
-			sql = contentSplit[1]
+			SQL = contentSplit[1]
 		} else {
-			sql = ""
+			SQL = ""
 		}
 
 		delimiterUnquoted, err := strconv.Unquote(delimiter)
@@ -102,74 +111,83 @@ func (m Mysql) GetMigrationCommands(sql string) []string {
 		}
 	}
 
-	return strings.Split(sql, delimiter)
+	return strings.Split(SQL, delimiter)
 }
 
-// MARIADB
-
+// Mariadb adapter
 type Mariadb struct {
-	Mysql
+	MySQL
 }
 
-// SQLITE3
+// SQLite3 adapter
+type SQLite3 struct{}
 
-type Sqlite3 struct{}
-
-func (s Sqlite3) SelectMigrationTableSql() string {
-	return "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?"
+// SelectMigrationTableSQL gets table names from db catalog
+func (s SQLite3) SelectMigrationTableSQL() string {
+	return "SELECT name FROM SQLite_master WHERE type = 'table' AND name = ?"
 }
 
-func (s Sqlite3) CreateMigrationTableSql() string {
+// CreateMigrationTableSQL gets SQL to create table for holding migrations
+func (s SQLite3) CreateMigrationTableSQL() string {
 	return `CREATE TABLE gomigrate (
   id INTEGER PRIMARY KEY,
   migration_id INTEGER NOT NULL UNIQUE
 )`
 }
 
-func (s Sqlite3) GetMigrationSql() string {
+// GetMigrationSQL gets migration SQL for given id
+func (s SQLite3) GetMigrationSQL() string {
 	return "SELECT migration_id FROM gomigrate WHERE migration_id = ?"
 }
 
-func (s Sqlite3) MigrationLogInsertSql() string {
+// MigrationLogInsertSQL gets insert SQL for migration
+func (s SQLite3) MigrationLogInsertSQL() string {
 	return "INSERT INTO gomigrate (migration_id) values (?)"
 }
 
-func (s Sqlite3) MigrationLogDeleteSql() string {
+// MigrationLogDeleteSQL returns SQL for deleting a migration"
+func (s SQLite3) MigrationLogDeleteSQL() string {
 	return "DELETE FROM gomigrate WHERE migration_id = ?"
 }
 
-func (s Sqlite3) GetMigrationCommands(sql string) []string {
-	return []string{sql}
+// GetMigrationCommands return SQL commands
+func (s SQLite3) GetMigrationCommands(SQL string) []string {
+	return []string{SQL}
 }
 
-// MSSQL
+// MsSQL adapter
+type MsSQL struct{}
 
-type Mssql struct{}
-
-func (m Mssql) SelectMigrationTableSql() string {
-  return "SELECT table_name FROM information_schema.tables WHERE table_name = ?"
+// SelectMigrationTableSQL gets table names from db catalog
+func (m MsSQL) SelectMigrationTableSQL() string {
+	return "SELECT table_name FROM information_schema.tables WHERE table_name = ?"
 }
 
-func (m Mssql) CreateMigrationTableSql() string {
-  return `CREATE TABLE gomigrate (
+// CreateMigrationTableSQL gets SQL to create table for holding migrations
+func (m MsSQL) CreateMigrationTableSQL() string {
+	return `CREATE TABLE gomigrate (
                   id           INT          NOT NULL IDENTITY,
                   migration_id BIGINT       NOT NULL UNIQUE,
                   PRIMARY KEY (id)
                 )`
 }
 
-func (m Mssql) GetMigrationSql() string {
-  return `SELECT migration_id FROM gomigrate WHERE migration_id = ?`
+// GetMigrationSQL gets migration SQL for given id
+func (m MsSQL) GetMigrationSQL() string {
+	return `SELECT migration_id FROM gomigrate WHERE migration_id = ?`
 }
 
-func (m Mssql) MigrationLogInsertSql() string {
-  return "INSERT INTO gomigrate (migration_id) values (?)"
+// MigrationLogInsertSQL gets insert SQL for migration
+func (m MsSQL) MigrationLogInsertSQL() string {
+	return "INSERT INTO gomigrate (migration_id) values (?)"
 }
 
-func (m Mssql) MigrationLogDeleteSql() string {
-  return "DELETE FROM gomigrate WHERE migration_id = ?"
+// MigrationLogDeleteSQL returns SQL for deleting a migration"
+func (m MsSQL) MigrationLogDeleteSQL() string {
+	return "DELETE FROM gomigrate WHERE migration_id = ?"
 }
 
-func (m Mssql) GetMigrationCommands(sql string) []string {
-  return []string{sql}
+// GetMigrationCommands return SQL commands
+func (m MsSQL) GetMigrationCommands(SQL string) []string {
+	return []string{SQL}
 }

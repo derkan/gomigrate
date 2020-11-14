@@ -127,7 +127,7 @@ func MigrationsFromPath(migrationsPath string, logger Logger) ([]*Migration, err
 		err = migration.Validate()
 		if err != nil {
 			logger.Printf("Invalid migration from files: %s\n", migration.Source)
-			return nil, InvalidMigrationPair
+			return nil, ErrInvalidMigrationPair
 		}
 	}
 

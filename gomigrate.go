@@ -18,11 +18,12 @@ const (
 	downMigration      = migrationType("down")
 )
 
+// Error types
 var (
-	InvalidMigrationFile  = errors.New("Invalid migration file")
-	InvalidMigrationPair  = errors.New("Invalid pair of migration files")
-	InvalidMigrationType  = errors.New("Invalid migration type")
-	ErrDuplicateMigration = errors.New("Duplicate migrations found")
+	ErrInvalidMigrationFile = errors.New("Invalid migration file")
+	ErrInvalidMigrationPair = errors.New("Invalid pair of migration files")
+	ErrInvalidMigrationType = errors.New("Invalid migration type")
+	ErrDuplicateMigration   = errors.New("Duplicate migrations found")
 )
 
 // Migrator contains the information needed to migrate a database schema.
@@ -45,7 +46,7 @@ type Logger interface {
 
 // MigrationTableExists returns true if the migration table already exists.
 func (m *Migrator) MigrationTableExists() (bool, error) {
-	row := m.DB.QueryRow(m.dbAdapter.SelectMigrationTableSql(), migrationTableName)
+	row := m.DB.QueryRow(m.dbAdapter.SelectMigrationTableSQL(), migrationTableName)
 	var tableName string
 	err := row.Scan(&tableName)
 	if err == sql.ErrNoRows {
@@ -62,7 +63,7 @@ func (m *Migrator) MigrationTableExists() (bool, error) {
 
 // CreateMigrationsTable creates the migrations table if it doesn't exist.
 func (m *Migrator) CreateMigrationsTable() error {
-	_, err := m.DB.Exec(m.dbAdapter.CreateMigrationTableSql())
+	_, err := m.DB.Exec(m.dbAdapter.CreateMigrationTableSQL())
 	if err != nil {
 		m.Logger.Fatalf("Error creating migrations table: %v", err)
 	}
@@ -147,7 +148,7 @@ func (m *Migrator) Migrate() error {
 // migration.
 func (m *Migrator) getMigrationStatuses() error {
 	for _, migration := range m.migrations {
-		row := m.DB.QueryRow(m.dbAdapter.GetMigrationSql(), migration.ID)
+		row := m.DB.QueryRow(m.dbAdapter.GetMigrationSQL(), migration.ID)
 		var mid uint64
 		err := row.Scan(&mid)
 		if err == sql.ErrNoRows {
@@ -191,13 +192,13 @@ func (m *Migrator) Migrations(status int) []*Migration {
 // ApplyMigration applies a single migration in the given direction.
 func (m *Migrator) ApplyMigration(migration *Migration, mType migrationType) error {
 	m.Logger.Printf("Applying migration: %s", migration.Name)
-	var sql string
+	var SQL string
 	if mType == upMigration && migration.Up != "" {
-		sql = migration.Up
+		SQL = migration.Up
 	} else if mType == downMigration && migration.Down != "" {
-		sql = migration.Down
+		SQL = migration.Down
 	} else {
-		return InvalidMigrationType
+		return ErrInvalidMigrationType
 	}
 	transaction, err := m.DB.Begin()
 	if err != nil {
@@ -205,8 +206,8 @@ func (m *Migrator) ApplyMigration(migration *Migration, mType migrationType) err
 		return err
 	}
 
-	// Certain adapters can not handle multiple sql commands in one file so we need the adapter to split up the command
-	commands := m.dbAdapter.GetMigrationCommands(string(sql))
+	// Certain adapters can not handle multiple SQL commands in one file so we need the adapter to split up the command
+	commands := m.dbAdapter.GetMigrationCommands(string(SQL))
 
 	// Perform the migration.
 	for _, cmd := range commands {
@@ -236,12 +237,12 @@ func (m *Migrator) ApplyMigration(migration *Migration, mType migrationType) err
 	// Log the event.
 	if mType == upMigration {
 		_, err = transaction.Exec(
-			m.dbAdapter.MigrationLogInsertSql(),
+			m.dbAdapter.MigrationLogInsertSQL(),
 			migration.ID,
 		)
 	} else {
 		_, err = transaction.Exec(
-			m.dbAdapter.MigrationLogDeleteSql(),
+			m.dbAdapter.MigrationLogDeleteSQL(),
 			migration.ID,
 		)
 	}

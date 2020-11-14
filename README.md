@@ -2,17 +2,21 @@
 
 [![Build Status](https://travis-ci.org/derkan/gomigrate.svg?branch=master)](https://travis-ci.org/derkan/gomigrate)
 
-
 A SQL database migration toolkit in Golang that supports migrations from multiple sources including in memory and files on disk.
 
 ## Supported databases
 
-- PostgreSQL  
-- CockroachDB
-- MariaDB
-- MySQL
+    _ ""
+    _ ""
+    _ ""
+    _ ""
+
+- [PostgreSQL](github.com/lib/pq)
+- [CockroachDB](github.com/lib/pq)
+- [MariaDB](github.com/mattn/go-sqlite3)
+- [MySQL](github.com/go-sql-driver/mysql)
 - Sqlite3
-- MSSQL
+- [MSSQL](github.com/denisenkom/go-mssqldb)
 
 ## Usage
 
@@ -23,6 +27,7 @@ import "github.com/derkan/gomigrate"
 ```
 
 Load Migrations from disk:
+
 ```go
 m, err = gomigrate.MigrationsFromPath(path, logger)
 if err != nil {
@@ -39,6 +44,7 @@ migrator.Logger = logger
 ```
 
 You may also specify a specific logger to use at creation time supporting interface:
+
 ```go
 type Logger interface {
 	Print(v ...interface{})
@@ -47,6 +53,7 @@ type Logger interface {
 	Fatalf(format string, v ...interface{})
 }
 ```
+
 ;such as logrus:
 
 ```go
@@ -84,7 +91,7 @@ the migration should run relative to the other migrations.
 ### Custom delimiter
 
 By default SQL clauses are delimited with ";", you can set a new delimiter
-by adding following as first line to migration sql file(for example set 
+by adding following as first line to migration sql file(for example set
 delimiter to `#`):
 `delimiter #`
 
@@ -100,12 +107,14 @@ CREATE TABLE users();
 ```
 
 #### 1_add_users_table_down.sql
+
 ```
 DROP TABLE users;
 ```
 
 ## Migrations from Memory
-Migrations can also be embedded directly in your go code and passed into the Migrator.  This can be useful for testdata fixtures or using go-bindata to build fixture data into your go binary.
+
+Migrations can also be embedded directly in your go code and passed into the Migrator. This can be useful for testdata fixtures or using go-bindata to build fixture data into your go binary.
 
 ```go
 	migrations := []*Migration{

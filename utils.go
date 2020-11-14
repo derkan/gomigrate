@@ -26,7 +26,7 @@ func parseMigrationPath(path string) (uint64, migrationType, string, error) {
 		return parseMatches(matches, downMigration)
 	}
 
-	return 0, "", "", InvalidMigrationFile
+	return 0, "", "", ErrInvalidMigrationFile
 }
 
 // Parses matches given by a migration file regex.
