@@ -212,7 +212,7 @@ func (m *Migrator) ApplyMigration(migration *Migration, mType migrationType) err
 	for _, cmd := range commands {
 		result, err := transaction.Exec(cmd)
 		if err != nil {
-			m.Logger.Printf("Error executing migration: %v", err)
+			m.Logger.Printf("Error executing migration: ===err=== %v, ===sql=== %s", err, cmd)
 			if rollbackErr := transaction.Rollback(); rollbackErr != nil {
 				m.Logger.Printf("Error rolling back transaction: %v", rollbackErr)
 				return rollbackErr
