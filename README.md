@@ -6,16 +6,11 @@ A SQL database migration toolkit in Golang that supports migrations from multipl
 
 ## Supported databases
 
-    _ ""
-    _ ""
-    _ ""
-    _ ""
-
 - [PostgreSQL](github.com/lib/pq)
 - [CockroachDB](github.com/lib/pq)
-- [MariaDB](github.com/mattn/go-sqlite3)
+- [MariaDB](github.com/go-sql-driver/mysql)
 - [MySQL](github.com/go-sql-driver/mysql)
-- Sqlite3
+- [Sqlite3](github.com/mattn/go-sqlite3)
 - [MSSQL](github.com/denisenkom/go-mssqldb)
 
 ## Usage
