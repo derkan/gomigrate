@@ -18,7 +18,7 @@ A SQL database migration toolkit in Golang that supports migrations from multipl
 First import the package:
 
 ```go
-import "github.com/derkan/gomigrate"
+import "github.com/derkan/gomigrate/v2"
 ```
 
 Load Migrations from disk:
