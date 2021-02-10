@@ -5,6 +5,7 @@ package gomigrate
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"sort"
@@ -88,7 +89,7 @@ func NewMigratorWithMigrations(db *sql.DB, adapter Migratable, migrations []*Mig
 			return nil, ok
 		}
 		if _, ok := migrator.migrations[m.ID]; ok {
-			return nil, ErrDuplicateMigration
+			return nil, fmt.Errorf("id: %d, err: %w", m.ID, ErrDuplicateMigration)
 		}
 		migrator.migrations[m.ID] = m
 	}
